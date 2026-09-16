@@ -1,0 +1,439 @@
+<title>Building Ghost Hunt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f1efe9;
+    --surface:#ffffff;
+    --surface-alt:#eae5da;
+    --ink:#211d26;
+    --ink-soft:#635c6d;
+    --ink-faint:#8b8494;
+    --accent:#bd5a1f;
+    --accent2:#4c7858;
+    --accent2-soft:#e2ebe2;
+    --line:#dcd6c9;
+    --code-bg:#1d1926;
+    --code-ink:#efe9f2;
+    --code-comment:#8f86a3;
+    --code-line:#332d3f;
+    --font-display:"Fraunces",Georgia,serif;
+    --font-body:"Work Sans",system-ui,sans-serif;
+    --font-mono:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#151219;
+      --surface:#1e1a23;
+      --surface-alt:#26212d;
+      --ink:#ece6e8;
+      --ink-soft:#a89eae;
+      --ink-faint:#756c80;
+      --accent:#e08a3e;
+      --accent2:#82ae8d;
+      --accent2-soft:#213028;
+      --line:#352f3e;
+      --code-bg:#131018;
+      --code-ink:#efe9f2;
+      --code-comment:#948b9f;
+      --code-line:#2a2432;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#151219; --surface:#1e1a23; --surface-alt:#26212d;
+    --ink:#ece6e8; --ink-soft:#a89eae; --ink-faint:#756c80;
+    --accent:#e08a3e; --accent2:#82ae8d; --accent2-soft:#213028;
+    --line:#352f3e; --code-bg:#131018; --code-ink:#efe9f2;
+    --code-comment:#948b9f; --code-line:#2a2432;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:var(--font-body); line-height:1.6;
+    padding:clamp(20px,5vw,64px) 20px 80px;
+  }
+  .wrap{max-width:780px;margin:0 auto;}
+  h1,h2,h3{font-family:var(--font-display);font-weight:700;text-wrap:balance;color:var(--ink);}
+  p{max-width:66ch;}
+  a{color:var(--accent);}
+  code{font-family:var(--font-mono);}
+
+  .hub-back{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);text-decoration:none;}
+  .hub-back:hover{color:var(--accent);}
+
+  header.masthead{padding-bottom:26px;margin-bottom:38px;border-bottom:1px solid var(--line);margin-top:18px;}
+  .eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent2);}
+  h1.title{font-size:clamp(2.2rem,5.6vw,3.1rem);line-height:1.04;margin:8px 0 10px;}
+  p.tagline{font-size:clamp(1rem,2.2vw,1.12rem);color:var(--ink-soft);max-width:58ch;margin:0 0 18px;}
+  .link-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .pill{
+    font-family:var(--font-mono);font-size:12.5px;text-decoration:none;
+    border:1px solid var(--line);border-radius:999px;padding:8px 14px;color:var(--ink);
+  }
+  .pill.primary{background:var(--accent);border-color:var(--accent);color:#fff8f1;}
+  .pill:hover{border-color:var(--accent);color:var(--accent);}
+  .pill.primary:hover{color:#fff8f1;opacity:.9;}
+
+  .prereq{
+    display:flex;gap:14px;flex-wrap:wrap;margin-top:18px;
+    font-size:13.5px;color:var(--ink-soft);
+  }
+  .prereq span{display:flex;align-items:center;gap:6px;}
+  .prereq b{color:var(--ink);font-weight:600;}
+
+  nav.toc{
+    background:var(--surface);border:1px solid var(--line);border-radius:10px;
+    padding:16px 20px;margin-bottom:44px;
+  }
+  nav.toc .label{font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:10px;display:block;}
+  nav.toc ol{margin:0;padding-left:18px;columns:2;column-gap:24px;font-size:14px;}
+  nav.toc li{margin-bottom:6px;break-inside:avoid;}
+  nav.toc a{color:var(--ink);text-decoration:none;}
+  nav.toc a:hover{color:var(--accent);}
+  @media (max-width:560px){nav.toc ol{columns:1;}}
+
+  section.step{margin-bottom:46px;}
+  .step-head{display:flex;align-items:baseline;gap:12px;margin-bottom:6px;}
+  .step-num{font-family:var(--font-mono);font-size:13px;color:var(--accent);}
+  h2{font-size:clamp(1.35rem,3vw,1.7rem);margin:0;}
+  .step p.desc{color:var(--ink-soft);font-size:14.5px;margin:6px 0 16px;max-width:62ch;}
+
+  pre.code{
+    background:var(--code-bg);color:var(--code-ink);
+    border-radius:9px;border:1px solid var(--code-line);
+    padding:16px 18px;overflow-x:auto;
+    font-family:var(--font-mono);font-size:13px;line-height:1.65;
+    margin:0 0 12px;
+  }
+  pre.code .c{color:var(--code-comment);font-style:italic;}
+  .filename{
+    font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);
+    margin-bottom:6px;letter-spacing:.03em;
+  }
+
+  .note{
+    background:var(--accent2-soft);border:1px solid var(--line);border-radius:8px;
+    padding:12px 16px;font-size:13.5px;color:var(--ink);margin-top:4px;
+  }
+  .note b{color:var(--accent2);}
+
+  .upgrade-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:26px;}
+  .upgrade-item .u-head{display:flex;align-items:baseline;gap:10px;margin-bottom:4px;}
+  .upgrade-item h3{font-family:var(--font-body);font-size:1.02rem;font-weight:700;margin:0;}
+  .upgrade-item .tag{font-family:var(--font-mono);font-size:11px;color:var(--accent2);}
+  .upgrade-item p.desc{color:var(--ink-soft);font-size:13.8px;margin:0 0 10px;max-width:62ch;}
+
+  footer.closing{
+    margin-top:10px;padding-top:26px;border-top:1px solid var(--line);
+    display:flex;flex-direction:column;gap:14px;
+  }
+  footer.closing p{margin:0;color:var(--ink-soft);font-size:14.5px;}
+</style>
+
+<div class="wrap">
+
+  <a class="hub-back" href="index.html">← Ghost Hunt Jam kit</a>
+
+  <header class="masthead">
+    <div class="eyebrow">Ghost Hunt Jam · Build Tutorial</div>
+    <h1 class="title">Building Ghost Hunt</h1>
+    <p class="tagline">A ghost-clicking arcade game in about 50 lines of p5.js. Follow the steps in order — each one adds a working piece, so you can stop and have something playable after any of them.</p>
+    <div class="link-row">
+      <a class="pill primary" href="demo.html">▶ Play the finished reference build</a>
+      <a class="pill" href="jam.html">Event plan &amp; upgrade menu</a>
+      <a class="pill" href="https://editor.p5js.org/">Open p5.js Web Editor</a>
+    </div>
+    <div class="prereq">
+      <span><b>Needs:</b> a browser</span>
+      <span><b>Language:</b> JavaScript</span>
+      <span><b>Library:</b> p5.js</span>
+      <span><b>Time:</b> ~30 min for the base game</span>
+    </div>
+  </header>
+
+  <nav class="toc">
+    <span class="label">On this page</span>
+    <ol>
+      <li><a href="#step-0">0. Set up your sketch</a></li>
+      <li><a href="#step-1">1. Draw a ghost</a></li>
+      <li><a href="#step-2">2. Spawn it, again and again</a></li>
+      <li><a href="#step-3">3. Click to score</a></li>
+      <li><a href="#step-4">4. Add a timer</a></li>
+      <li><a href="#step-5">5. Start &amp; game-over screens</a></li>
+      <li><a href="#level-up">Level up: 5 upgrades</a></li>
+    </ol>
+  </nav>
+
+  <section class="step" id="step-0">
+    <div class="step-head"><span class="step-num">Step 0</span><h2>Set up your sketch</h2></div>
+    <p class="desc">Open <a href="https://editor.p5js.org/">editor.p5js.org</a>, clear the default code, and paste this. p5.js calls <code>setup()</code> once and <code>draw()</code> on every frame — that's the whole engine.</p>
+    <div class="filename">sketch.js</div>
+    <pre class="code">function setup() {
+  createCanvas(640, 480);
+}
+
+function draw() {
+  background(20);
+}</pre>
+    <div class="note">Hit the ▶ Play button. You should see a dark grey canvas — that's your game screen.</div>
+  </section>
+
+  <section class="step" id="step-1">
+    <div class="step-head"><span class="step-num">Step 1</span><h2>Draw a ghost</h2></div>
+    <p class="desc">Start with a shape you can reason about — a pale circle. You can make it look more ghost-like later; the click logic doesn't care what it looks like.</p>
+    <div class="filename">sketch.js</div>
+    <pre class="code">function draw() {
+  background(20);
+  drawGhost(width / 2, height / 2);
+}
+
+function drawGhost(x, y) {
+  noStroke();
+  fill(200, 255, 220);
+  ellipse(x, y, 60, 60);
+}</pre>
+  </section>
+
+  <section class="step" id="step-2">
+    <div class="step-head"><span class="step-num">Step 2</span><h2>Spawn it, again and again</h2></div>
+    <p class="desc">A ghost object holding its own position, and a spawn function that picks a new random one. Checking <code>frameCount</code> against an interval is the cheapest way to do "every N frames" without a separate timer.</p>
+    <div class="filename">sketch.js</div>
+    <pre class="code">let ghost;
+let spawnEvery = 60; <span class="c">// ~1 second at 60fps</span>
+
+function setup() {
+  createCanvas(640, 480);
+  spawnGhost();
+}
+
+function draw() {
+  background(20);
+  if (frameCount % spawnEvery === 0) spawnGhost();
+  drawGhost(ghost.x, ghost.y);
+}
+
+function spawnGhost() {
+  ghost = { x: random(40, width - 40), y: random(40, height - 40) };
+}
+
+function drawGhost(x, y) {
+  noStroke();
+  fill(200, 255, 220);
+  ellipse(x, y, 60, 60);
+}</pre>
+  </section>
+
+  <section class="step" id="step-3">
+    <div class="step-head"><span class="step-num">Step 3</span><h2>Click to score</h2></div>
+    <p class="desc">p5.js calls <code>mousePressed()</code> on every click. <code>dist()</code> gives you the distance between the click and the ghost — if it's less than the ghost's radius, it's a hit.</p>
+    <div class="filename">sketch.js</div>
+    <pre class="code">let score = 0;
+
+function mousePressed() {
+  let hit = dist(mouseX, mouseY, ghost.x, ghost.y) &lt; 30;
+  if (hit) {
+    score++;
+    spawnGhost();
+  }
+}
+
+function draw() {
+  background(20);
+  if (frameCount % spawnEvery === 0) spawnGhost();
+  drawGhost(ghost.x, ghost.y);
+
+  fill(255);
+  textSize(20);
+  text('Score: ' + score, 16, 30);
+}</pre>
+    <div class="note"><b>Try it:</b> click the ghost a few times. Score should go up and the ghost should jump to a new spot.</div>
+  </section>
+
+  <section class="step" id="step-4">
+    <div class="step-head"><span class="step-num">Step 4</span><h2>Add a timer</h2></div>
+    <p class="desc"><code>millis()</code> returns milliseconds since the sketch started — subtract a saved start time from it to get elapsed seconds, and count down from there.</p>
+    <div class="filename">sketch.js</div>
+    <pre class="code">let duration = 30;
+let startTime;
+
+function setup() {
+  createCanvas(640, 480);
+  startTime = millis();
+  spawnGhost();
+}
+
+function draw() {
+  background(20);
+
+  let elapsed = (millis() - startTime) / 1000;
+  let timeLeft = max(0, duration - elapsed);
+
+  if (frameCount % spawnEvery === 0) spawnGhost();
+  drawGhost(ghost.x, ghost.y);
+
+  fill(255);
+  textSize(20);
+  text('Score: ' + score, 16, 30);
+  text('Time: ' + ceil(timeLeft), width - 110, 30);
+}</pre>
+  </section>
+
+  <section class="step" id="step-5">
+    <div class="step-head"><span class="step-num">Step 5</span><h2>Start &amp; game-over screens</h2></div>
+    <p class="desc">One variable, <code>state</code>, decides what the screen shows and what a click does. This is the same pattern the reference build uses — it just has a third state's worth of decoration.</p>
+    <div class="filename">sketch.js</div>
+    <pre class="code">let state = 'start'; <span class="c">// 'start' | 'play' | 'over'</span>
+
+function draw() {
+  if (state === 'start') {
+    background(20);
+    textAlign(CENTER, CENTER);
+    textSize(28);
+    fill(255);
+    text('Ghost Hunt\nClick to start', width / 2, height / 2);
+    return;
+  }
+
+  if (state === 'over') {
+    background(20);
+    textAlign(CENTER, CENTER);
+    textSize(24);
+    fill(255);
+    text('Game over\nScore: ' + score, width / 2, height / 2);
+    return;
+  }
+
+  <span class="c">// state === 'play'</span>
+  background(20);
+  let elapsed = (millis() - startTime) / 1000;
+  let timeLeft = max(0, duration - elapsed);
+  if (timeLeft &lt;= 0) { state = 'over'; return; }
+
+  if (frameCount % spawnEvery === 0) spawnGhost();
+  drawGhost(ghost.x, ghost.y);
+
+  textAlign(LEFT, BASELINE);
+  fill(255);
+  textSize(20);
+  text('Score: ' + score, 16, 30);
+  text('Time: ' + ceil(timeLeft), width - 110, 30);
+}
+
+function mousePressed() {
+  if (state === 'start') {
+    state = 'play';
+    startTime = millis();
+    score = 0;
+    spawnGhost();
+    return;
+  }
+  if (state === 'over') {
+    state = 'start';
+    return;
+  }
+  if (dist(mouseX, mouseY, ghost.x, ghost.y) &lt; 30) {
+    score++;
+    spawnGhost();
+  }
+}</pre>
+    <div class="note"><b>That's a complete Ghost Hunt.</b> Start screen, click-to-score, countdown, game over, restart. Everything past here is optional.</div>
+  </section>
+
+  <section id="level-up">
+    <div class="step-head"><span class="step-num">Next</span><h2>Level up: 5 upgrades</h2></div>
+    <p class="desc">Short, self-contained additions to the base game above. Pick the ones that sound fun — the reference build uses all five plus a couple more.</p>
+
+    <ul class="upgrade-list">
+      <li class="upgrade-item">
+        <div class="u-head"><h3>Give the ghost movement</h3><span class="tag">~10 min</span></div>
+        <p class="desc">Store a velocity on the ghost and nudge its position every frame, bouncing off the walls.</p>
+        <pre class="code">ghost.vx = random(-2, 2);
+ghost.vy = random(-2, 2);
+
+<span class="c">// in draw(), before drawGhost():</span>
+ghost.x += ghost.vx;
+ghost.y += ghost.vy;
+if (ghost.x &lt; 30 || ghost.x &gt; width - 30) ghost.vx *= -1;
+if (ghost.y &lt; 30 || ghost.y &gt; height - 30) ghost.vy *= -1;</pre>
+      </li>
+
+      <li class="upgrade-item">
+        <div class="u-head"><h3>Add a second enemy type</h3><span class="tag">~20 min</span></div>
+        <p class="desc">Swap the single <code>ghost</code> variable for an array of entities, each with a <code>type</code>. Spawn and draw branch on that type.</p>
+        <pre class="code">let entities = [];
+
+function spawnGhost() {
+  let type = random() &lt; 0.7 ? 'ghost' : 'pumpkin';
+  entities.push({
+    type: type,
+    x: random(40, width - 40),
+    y: random(40, height - 40)
+  });
+}
+
+<span class="c">// in mousePressed(), loop entities instead of checking one ghost:</span>
+for (let i = entities.length - 1; i &gt;= 0; i--) {
+  let e = entities[i];
+  if (dist(mouseX, mouseY, e.x, e.y) &lt; 30) {
+    score += e.type === 'pumpkin' ? 25 : 10;
+    entities.splice(i, 1);
+    break;
+  }
+}</pre>
+      </li>
+
+      <li class="upgrade-item">
+        <div class="u-head"><h3>Sound effects</h3><span class="tag">~10 min</span></div>
+        <p class="desc">The easy path is p5.sound: load a short clip and play it on a hit. Add the p5.sound library in the editor's sketch settings first.</p>
+        <pre class="code">let hitSound;
+
+function preload() {
+  hitSound = loadSound('hit.mp3');
+}
+
+<span class="c">// on a successful click:</span>
+hitSound.play();</pre>
+        <div class="note">No audio file handy? The <a href="demo.html">reference build</a> synthesizes its beeps with the Web Audio API instead — no files needed, just an oscillator and a quick volume fade.</div>
+      </li>
+
+      <li class="upgrade-item">
+        <div class="u-head"><h3>Particle burst on a hit</h3><span class="tag">~15 min</span></div>
+        <p class="desc">An array of tiny dots with random outward velocity, each fading out and removing itself once its life hits zero.</p>
+        <pre class="code">let particles = [];
+
+function burst(x, y) {
+  for (let i = 0; i &lt; 10; i++) {
+    let a = random(TWO_PI);
+    particles.push({ x: x, y: y, vx: cos(a) * 2, vy: sin(a) * 2, life: 1 });
+  }
+}
+
+<span class="c">// in draw(), after drawing entities:</span>
+for (let i = particles.length - 1; i &gt;= 0; i--) {
+  let pt = particles[i];
+  pt.x += pt.vx; pt.y += pt.vy; pt.life -= 0.04;
+  if (pt.life &lt;= 0) { particles.splice(i, 1); continue; }
+  noStroke();
+  fill(200, 255, 220, pt.life * 255);
+  ellipse(pt.x, pt.y, 5);
+}</pre>
+      </li>
+
+      <li class="upgrade-item">
+        <div class="u-head"><h3>Difficulty ramp</h3><span class="tag">~10 min</span></div>
+        <p class="desc">Shrink the spawn interval as the run goes on, using <code>lerp()</code> between a slow start and a fast finish.</p>
+        <pre class="code"><span class="c">// in draw(), replacing the fixed spawnEvery:</span>
+let progress = constrain(elapsed / duration, 0, 1);
+let interval = lerp(60, 20, progress); <span class="c">// frames between spawns</span>
+if (frameCount % floor(interval) === 0) spawnGhost();</pre>
+      </li>
+    </ul>
+  </section>
+
+  <footer class="closing">
+    <p>Want to see all of this combined — movement, three enemy types, lives, a frenzy power-up, particles, fog, and a scoreboard — in one sketch? That's the <a href="demo.html">reference build</a>. Its source is heavier than this tutorial on purpose: it's what "finished" can look like, not what "started" should.</p>
+  </footer>
+
+</div>
