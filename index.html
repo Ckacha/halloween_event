@@ -4,16 +4,155 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ghost Hunt</title>
+<link rel="icon" type="image/png" href="media/IMG_0398.png">
+<link rel="apple-touch-icon" href="media/IMG_0398.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
 <style>
-  body { background:#111; color:#eee; font-family:sans-serif; text-align:center; margin:0; padding:20px; }
-  h1 { margin:0 0 10px; }
-  canvas { display:block; margin:0 auto; border-radius:8px; }
+  :root{
+    --night:#14101c;
+    --panel:#1d1728;
+    --panel-line:#372c46;
+    --parchment:#f4ecd9;
+    --parchment-dim:#b8ab99;
+    --pumpkin:#ff8f3f;
+    --mint:#8fd6b0;
+    --font-display:"Fraunces",Georgia,serif;
+    --font-body:"Work Sans",system-ui,sans-serif;
+    --font-mono:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, #2a2038 0%, transparent 60%),
+      var(--night);
+    color:var(--parchment);
+    font-family:var(--font-body);
+    min-height:100vh;
+    display:flex;flex-direction:column;
+  }
+  a{color:inherit;}
+
+  /* ---------- header ---------- */
+  header.site{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:16px;padding:14px 22px;
+    border-bottom:1px solid var(--panel-line);
+    background:rgba(29,23,40,.6);
+    flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;}
+  .brand img{width:34px;height:34px;object-fit:contain;}
+  .brand span{font-family:var(--font-display);font-weight:700;font-size:1.15rem;color:var(--parchment);}
+  nav.site-nav{display:flex;gap:6px;flex-wrap:wrap;}
+  nav.site-nav a{
+    font-family:var(--font-mono);font-size:12.5px;text-decoration:none;
+    color:var(--parchment-dim);padding:7px 12px;border-radius:999px;
+    border:1px solid transparent;
+  }
+  nav.site-nav a:hover{color:var(--pumpkin);border-color:var(--panel-line);}
+  nav.site-nav a.current{color:var(--parchment);border-color:var(--panel-line);background:var(--panel);}
+
+  /* ---------- main ---------- */
+  main{flex:1;display:flex;flex-direction:column;align-items:center;padding:clamp(24px,6vw,48px) 18px;}
+  .hero{text-align:center;max-width:520px;margin-bottom:22px;}
+  .hero img{width:64px;height:64px;object-fit:contain;margin-bottom:8px;}
+  h1{font-family:var(--font-display);font-weight:700;font-size:clamp(2rem,6vw,2.8rem);margin:0 0 8px;text-wrap:balance;}
+  .hero p{color:var(--parchment-dim);margin:0;font-size:15px;}
+
+  .cabinet{
+    background:var(--panel);border:1px solid var(--panel-line);border-radius:14px;
+    padding:14px;width:100%;max-width:520px;
+    box-shadow:0 0 0 1px rgba(255,143,63,.06), 0 24px 60px -20px rgba(0,0,0,.6);
+  }
+  #sketch-holder{width:100%;aspect-ratio:4/3;border-radius:9px;overflow:hidden;background:#0e0a15;display:block;}
+  #sketch-holder canvas{display:block;width:100% !important;height:100% !important;}
+
+  .upsell{margin-top:20px;font-size:13.5px;color:var(--parchment-dim);text-align:center;}
+  .upsell a{color:var(--pumpkin);text-decoration:none;}
+  .upsell a:hover{text-decoration:underline;}
+
+  /* ---------- footer ---------- */
+  footer.site{
+    border-top:1px solid var(--panel-line);
+    padding:26px 22px;
+    display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;
+    font-size:13px;color:var(--parchment-dim);
+  }
+  footer.site .col h3{
+    font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--mint);margin:0 0 10px;font-weight:600;
+  }
+  footer.site .col ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;}
+  footer.site .col a{text-decoration:none;}
+  footer.site .col a:hover{color:var(--pumpkin);}
+  footer.site .brandcol{display:flex;align-items:center;gap:10px;max-width:220px;}
+  footer.site .brandcol img{width:30px;height:30px;object-fit:contain;flex:none;}
+  footer.site .brandcol p{margin:0;font-size:12.5px;}
+
+  @media (max-width:480px){
+    header.site{padding:12px 16px;}
+    nav.site-nav a{padding:6px 9px;}
+  }
 </style>
 </head>
 <body>
-  <h1>Ghost Hunt</h1>
-  <p>Click the ghosts before time runs out.</p>
+
+  <header class="site">
+    <a class="brand" href="index.html">
+      <img src="media/IMG_0398.png" alt="Ghost Hunt logo">
+      <span>Ghost Hunt</span>
+    </a>
+    <nav class="site-nav">
+      <a class="current" href="index.html">Play</a>
+      <a href="tutorial.html">Tutorial</a>
+      <a href="demo.html">Full Demo</a>
+      <a href="jam.html">Event Plan</a>
+      <a href="https://github.com/CKacha/halloween_event">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="hero">
+      <img src="media/IMG_0398.png" alt="">
+      <h1>Ghost Hunt</h1>
+      <p>Click the ghost before time runs out. This is the base game everyone starts from.</p>
+    </div>
+
+    <div class="cabinet">
+      <div id="sketch-holder"></div>
+    </div>
+
+    <p class="upsell">Want movement, more enemies, sound, and power-ups? Play the <a href="demo.html">full reference build</a> or learn how it's made in the <a href="tutorial.html">tutorial</a>.</p>
+  </main>
+
+  <footer class="site">
+    <div class="col brandcol">
+      <img src="media/IMG_0398.png" alt="">
+      <p>A Hack Club mini YSWS build night: click-the-ghost arcade game in p5.js.</p>
+    </div>
+    <div class="col">
+      <h3>Kit</h3>
+      <ul>
+        <li><a href="index.html">Play the base game</a></li>
+        <li><a href="tutorial.html">Build tutorial</a></li>
+        <li><a href="demo.html">Full reference build</a></li>
+        <li><a href="jam.html">Event plan</a></li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Elsewhere</h3>
+      <ul>
+        <li><a href="https://github.com/CKacha/halloween_event">Source on GitHub</a></li>
+        <li><a href="https://hackclub.com">Hack Club</a></li>
+        <li><a href="https://editor.p5js.org/">p5.js Web Editor</a></li>
+      </ul>
+    </div>
+  </footer>
+
   <script>
     let ghost;
     let score = 0;
@@ -21,10 +160,20 @@
     let startTime;
     let state = 'start'; // start | play | over
     let spawnEvery = 60;
+    let canvasEl;
 
     function setup() {
-      createCanvas(480, 360);
+      let holder = document.getElementById('sketch-holder');
+      let w = holder.clientWidth || 480;
+      canvasEl = createCanvas(w, w * 0.75);
+      canvasEl.parent(holder);
       spawnGhost();
+    }
+
+    function windowResized() {
+      let holder = document.getElementById('sketch-holder');
+      let w = holder.clientWidth || 480;
+      resizeCanvas(w, w * 0.75);
     }
 
     function spawnGhost() {
@@ -46,7 +195,7 @@
       if (state === 'start') {
         textAlign(CENTER, CENTER);
         fill(255);
-        textSize(24);
+        textSize(22);
         text('Click to start', width / 2, height / 2);
         return;
       }
@@ -54,7 +203,7 @@
       if (state === 'over') {
         textAlign(CENTER, CENTER);
         fill(255);
-        textSize(24);
+        textSize(22);
         text('Game over\nScore: ' + score + '\nClick to retry', width / 2, height / 2);
         return;
       }
@@ -68,13 +217,14 @@
 
       textAlign(LEFT, TOP);
       fill(255);
-      textSize(18);
+      textSize(16);
       text('Score: ' + score, 12, 10);
       textAlign(RIGHT, TOP);
       text('Time: ' + ceil(timeLeft), width - 12, 10);
     }
 
     function mousePressed() {
+      if (!canvasEl) return;
       if (state === 'start' || state === 'over') {
         state = 'play';
         score = 0;
@@ -88,5 +238,6 @@
       }
     }
   </script>
+
 </body>
 </html>
